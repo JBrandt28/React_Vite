@@ -5,6 +5,7 @@ function Tarefas() {
     const [descricaoEditada, setDescricaoEditada] = useState('');
     const [editando, setEditando] = useState(false);
     const [tarefaEditandoIndex, setTarefaEditandoIndex] = useState(null);
+    const [erro, setErro] = useState('');
     const descricaoTarefaInputRef = useRef();
 
     useEffect(() => {
@@ -15,16 +16,24 @@ function Tarefas() {
     }, []);
 
     function adicionarTarefa() {
+        const descricao = descricaoTarefaInputRef.current.value.trim(); // Removendo espaços em branco antes e depois da string
+        if (descricao === '') {
+            // Se a descrição estiver vazia, não faz nada
+            setErro('Por favor, insira uma descrição para a tarefa.');
+            return;
+        }
+    
         const novaTarefa = {
-            descricao: descricaoTarefaInputRef.current.value,
+            descricao: descricao,
             finalizado: false
         };
-
+    
         const novaListaTarefas = [...listaTarefas, novaTarefa];
         setListaTarefas(novaListaTarefas);
         localStorage.setItem("tarefas", JSON.stringify(novaListaTarefas));
-
+    
         descricaoTarefaInputRef.current.value = '';
+        setErro('');
     }
 
     function removerTarefa(index) {
@@ -42,13 +51,22 @@ function Tarefas() {
     }
 
     function salvarEdicao() {
+        const descricaoEditada = descricaoTarefaInputRef.current.value;
+        if (!descricaoEditada.trim()) {
+            // Se o campo estiver vazio, você pode exibir uma mensagem de erro ou simplesmente retornar sem fazer nada.
+            setErro('Por favor, insira uma descrição para a tarefa.');
+            return;
+        }
+    
         const novaListaTarefas = [...listaTarefas];
-        novaListaTarefas[tarefaEditandoIndex].descricao = descricaoTarefaInputRef.current.value;
+        novaListaTarefas[tarefaEditandoIndex].descricao = descricaoEditada;
         setListaTarefas(novaListaTarefas);
         localStorage.setItem("tarefas", JSON.stringify(novaListaTarefas));
         setEditando(false);
         descricaoTarefaInputRef.current.value = '';
+        setErro('');
     }
+    
 
     function atualizarTarefa(tarefaAtual) {
         tarefaAtual.finalizado = !tarefaAtual.finalizado;
@@ -68,6 +86,7 @@ function Tarefas() {
             ) : (
                 <button onClick={adicionarTarefa}>Cadastrar</button>
             )}
+            {erro && <div className="erro-mensagem">{erro}</div>}
             <br />
             <div>
                 {listaTarefas.map((tarefaAtual, index) => (
